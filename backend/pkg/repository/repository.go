@@ -1,0 +1,44 @@
+package repository
+
+import (
+	"backend/pkg/model"
+	"github.com/jmoiron/sqlx"
+)
+
+type userRepo interface {
+	GetUserInfo(userId, labId int) (model.UserRepo, error)
+	InsertUserInfo(user model.UserRepo) error
+	UpdateUserInfo(user model.UserRepo) error
+}
+
+type varianceRepo interface {
+}
+
+type tokenRepo interface {
+	UpdateToken(userId int, labId int, token string) error
+	ClearToken(userId, labId int) error
+	GetUserIdByToken(labId int, token string) (int, error)
+}
+
+type markRepo interface {
+	UpdateCurrentStep(userId, labId, step int) error
+	GetCurrentStep(userId, labId int) (int, error)
+	IncrementMark(userId, labId, mark int) error
+	GetCurrentMark(userId, labId int) (int, error)
+}
+
+type Repo struct {
+	userRepo
+	varianceRepo
+	tokenRepo
+	markRepo
+}
+
+func NewRepo(db *sqlx.DB) *Repo {
+	return &Repo{
+		userRepo:     NewUserRepo(db),
+		tokenRepo:    NewTokenRepo(db),
+		varianceRepo: NewVarianceRepo(db),
+		markRepo:     NewMarkRepo(db),
+	}
+}
