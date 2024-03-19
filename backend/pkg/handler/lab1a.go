@@ -128,14 +128,6 @@ func (h *Handler) OpenFirstALabForStudent(c *gin.Context) {
 					if err != nil {
 						continue
 					}
-					setLabB, err := h.Service.ValidateLab3BResult(ctx, variance)
-					if err != nil {
-						continue
-					}
-					setLabC, err := h.Service.ValidateLab3CResult(ctx, variance)
-					if err != nil {
-						continue
-					}
 
 					var firstMaxA, secondMaxA float64 = 0, 0
 					for _, v := range setLabA {
@@ -147,27 +139,7 @@ func (h *Handler) OpenFirstALabForStudent(c *gin.Context) {
 						}
 					}
 
-					var firstMaxB, secondMaxB float64 = 0, 0
-					for _, v := range setLabB {
-						if firstMaxB <= v {
-							secondMaxB = firstMaxB
-							firstMaxB = v
-						} else if secondMaxB <= v {
-							secondMaxB = v
-						}
-					}
-
-					var firstMaxC, secondMaxC float64 = 0, 0
-					for _, v := range setLabC {
-						if firstMaxC <= v {
-							secondMaxC = firstMaxC
-							firstMaxC = v
-						} else if secondMaxC <= v {
-							secondMaxC = v
-						}
-					}
-
-					if secondMaxA <= 0 || secondMaxB <= 0 || secondMaxC <= 0 {
+					if secondMaxA <= 0  {
 						continue
 					}
 
