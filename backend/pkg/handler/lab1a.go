@@ -120,33 +120,12 @@ func (h *Handler) OpenFirstALabForStudent(c *gin.Context) {
 				case <-routineCtx.Done():
 					return
 				default:
-					variance, err := h.Service.GenerateTask(ctx, userId)
-					if err != nil {
-						continue
-					}
-					setLabA, err := h.Service.ValidateLab3AResult(ctx, variance)
+					variance, err := h.Service.GenerateUserVariance(ctx)
 					if err != nil {
 						continue
 					}
 
-					var firstMaxA, secondMaxA float64 = 0, 0
-					for _, v := range setLabA {
-						if firstMaxA <= v {
-							secondMaxA = firstMaxA
-							firstMaxA = v
-						} else if secondMaxA <= v {
-							secondMaxA = v
-						}
-					}
-
-					if secondMaxA <= 0  {
-						continue
-					}
-
-					if firstMaxA > secondMaxA+0.03 && firstMaxB > secondMaxB+0.03 && firstMaxC > secondMaxC+0.03 {
-						if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1AId, variance); err != nil {
-							return
-						}
+					if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1AId, variance); err != nil {
 						return
 					}
 				}

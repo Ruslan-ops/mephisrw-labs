@@ -6,6 +6,10 @@ import (
 	"context"
 )
 
+type task interface {
+	GenerateUserVariance(ctx context.Context) (int, [][]float64)
+}
+
 type external interface {
 	SendLabMark(ctx context.Context, userId, labId, percentage int) error
 	GetUserId(ctx context.Context, token string) (int, error)
@@ -41,6 +45,7 @@ type Service struct {
 	lab1a
 	lab1b
 	lab2
+	task
 }
 
 func NewService(repo *repository.Repo) *Service {
@@ -50,5 +55,6 @@ func NewService(repo *repository.Repo) *Service {
 		lab1a:     NewLab1aService(repo),
 		lab1b:     NewLab1bService(repo),
 		lab2:      NewLab2Service(repo),
+		task:      NewTask(),
 	}
 }
