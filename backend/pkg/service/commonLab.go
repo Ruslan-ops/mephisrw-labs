@@ -33,7 +33,7 @@ func (s *commonLabService) GetLabResult(ctx context.Context, userId, labId int) 
 	return mark, nil
 }
 
-func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (model.GeneratedVariance, error) {
+func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (model.Variance, error) {
 	return s.repo.GetVariance(userId, labId)
 }
 

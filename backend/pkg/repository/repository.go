@@ -12,6 +12,8 @@ type userRepo interface {
 }
 
 type varianceRepo interface {
+	UpdateVariance(userId int, labId int, variance model.Variance) error
+	GetVariance(userId, labId int) (model.Variance, error)
 }
 
 type tokenRepo interface {

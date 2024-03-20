@@ -2,6 +2,7 @@ package handler
 
 import (
 	"backend/pkg/handler/errorResponse"
+	"backend/pkg/model"
 	"backend/pkg/service"
 	"context"
 	"fmt"
@@ -120,12 +121,11 @@ func (h *Handler) OpenFirstALabForStudent(c *gin.Context) {
 				case <-routineCtx.Done():
 					return
 				default:
-					variance, err := h.Service.GenerateUserVariance(ctx)
-					if err != nil {
-						continue
-					}
-
-					if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1AId, variance); err != nil {
+					variance, data := h.Service.GenerateUserVariance(ctx)
+					if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1AId, model.Variance{
+						Number: variance,
+						Data:   data,
+					}); err != nil {
 						return
 					}
 				}

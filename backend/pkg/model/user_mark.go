@@ -9,7 +9,7 @@ type UserLabMark struct {
 type UserLabMarkToResponse struct {
 	UserId     int      `json:"user_id"`
 	LabId      int      `json:"laboratory_id"`
-	Variance   UserTask `json:"variance"`
+	Variance   Variance `json:"variance"`
 	Step       int      `json:"step"`
 	Percentage int      `json:"percentage"`
 }
@@ -25,7 +25,7 @@ type UserRepo struct {
 
 type UserVarianceRepo struct {
 	UserId   int      `json:"user_id" db:"user_id"`
-	Variance UserTask `json:"variance"`
+	Variance Variance `json:"variance"`
 }
 
 type UserLabKey struct {
@@ -35,5 +35,5 @@ type UserLabKey struct {
 
 type UserIsDone struct {
 	IsDone   bool     `json:"is_done"`
-	Variance UserTask `json:"variance"`
+	Variance Variance `json:"variance"`
 }

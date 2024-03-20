@@ -7,7 +7,9 @@ import (
 )
 
 type task interface {
-	GenerateUserVariance(ctx context.Context) (int, [][]float64)
+	GenerateUserVariance(ctx context.Context) (int, [][][]float64)
+	UpdateUserVariance(ctx context.Context, userId int, labId int, variance model.Variance) error
+	GetVariance(ctx context.Context, userId, labId int) (model.Variance, error)
 }
 
 type external interface {
@@ -55,6 +57,6 @@ func NewService(repo *repository.Repo) *Service {
 		lab1a:     NewLab1aService(repo),
 		lab1b:     NewLab1bService(repo),
 		lab2:      NewLab2Service(repo),
-		task:      NewTask(),
+		task:      NewTask(repo),
 	}
 }
