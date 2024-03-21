@@ -7,9 +7,15 @@ import (
 )
 
 type task interface {
-	GenerateUserVariance(ctx context.Context) (int, [][][]float64)
-	UpdateUserVariance(ctx context.Context, userId int, labId int, variance model.Variance) error
-	GetVariance(ctx context.Context, userId, labId int) (model.Variance, error)
+	GenerateUserVariance1A(ctx context.Context) (int, [][][]float64)
+	GenerateUserVariance1B(ctx context.Context) (int, [][][]float64)
+	GenerateUserVariance2(ctx context.Context) (int, [][][]float64)
+	UpdateUserVariance1A(ctx context.Context, userId int, variance model.Variance1A) error
+	UpdateUserVariance1B(ctx context.Context, userId int, variance model.Variance1B) error
+	UpdateUserVariance2(ctx context.Context, userId int, variance model.Variance2) error
+	GetVariance1A(ctx context.Context, userId int) (model.Variance1A, error)
+	GetVariance1B(ctx context.Context, userId int) (model.Variance1B, error)
+	GetVariance2(ctx context.Context, userId int) (model.Variance2, error)
 }
 
 type external interface {
@@ -33,6 +39,12 @@ type commonLab interface {
 }
 
 type lab1a interface {
+	CheckLab1AImportanceMatrix(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
+	CheckLab1AImportanceMatrixFirstCriteria(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
+	CheckLab1AImportanceMatrixSecondCriteria(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
+	CheckLab1AImportanceMatrixThirdCriteria(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
+	CheckLab1AImportanceMatrixFourthCriteria(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
+	CheckLab1AChosenAlternative(ctx context.Context, userId int, userMatrix [][]float64) (int, []float64, int, error)
 }
 
 type lab1b interface {

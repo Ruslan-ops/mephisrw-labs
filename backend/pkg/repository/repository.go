@@ -12,8 +12,12 @@ type userRepo interface {
 }
 
 type varianceRepo interface {
-	UpdateVariance(userId int, labId int, variance model.Variance) error
-	GetVariance(userId, labId int) (model.Variance, error)
+	UpdateVariance1A(userId int, labId int, variance model.Variance1A) error
+	UpdateVariance1B(userId int, labId int, variance model.Variance1B) error
+	UpdateVariance2(userId int, labId int, variance model.Variance2) error
+	GetVariance1A(userId, labId int) (model.Variance1A, error)
+	GetVariance1B(userId, labId int) (model.Variance1B, error)
+	GetVariance2(userId, labId int) (model.Variance2, error)
 }
 
 type tokenRepo interface {

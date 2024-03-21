@@ -33,6 +33,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 			notsecurityLab1a := studentLab1a.Group("", h.CheckFirstAHeaderStudent)
 			{
+				notsecurityLab1a.POST("/importance-matrix", h.Send1AImportanceMatrix)
+				notsecurityLab1a.POST("/first-criteria", h.Send1AImportanceMatrixFirstCriteria)
+				notsecurityLab1a.POST("/second-criteria", h.Send1AImportanceMatrixSecondCriteria)
+				notsecurityLab1a.POST("/third-criteria", h.Send1AImportanceMatrixThirdCriteria)
+				notsecurityLab1a.POST("/fourth-criteria", h.Send1AImportanceMatrixFourthCriteria)
+				notsecurityLab1a.POST("/result", h.Send1AChosenAlternative)
 			}
 		}
 	}

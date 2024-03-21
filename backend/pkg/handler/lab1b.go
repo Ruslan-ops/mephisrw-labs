@@ -2,6 +2,7 @@ package handler
 
 import (
 	"backend/pkg/handler/errorResponse"
+	"backend/pkg/model"
 	"backend/pkg/service"
 	"context"
 	"fmt"
@@ -36,7 +37,7 @@ func (h *Handler) OpenFirstBLab(c *gin.Context) {
 		return
 	}
 
-	userDone, matrix, err := h.Service.GetVariance(ctx, userId, service.Lab1BId)
+	userDone, err := h.Service.GetVariance1B(ctx, userId)
 	if err != nil {
 		err = fmt.Errorf("ошибка получения варианта")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -45,7 +46,6 @@ func (h *Handler) OpenFirstBLab(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"user_id": userId,
 		"variant": userDone,
-		"matrix":  matrix,
 	})
 
 	go func() {
@@ -106,82 +106,18 @@ func (h *Handler) OpenFirstBLabForStudent(c *gin.Context) {
 	}
 
 	if isOpenBool {
-		isDone, err := h.Service.OpenLabForStudent(ctx, userId, service.Lab1BId, externalLabId)
-		if err != nil {
+		if _, err := h.Service.OpenLabForStudent(ctx, userId, service.Lab1BId, externalLabId); err != nil {
 			err = fmt.Errorf("ошибка открытия лабораторной работы")
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
-		if isDone {
-			go func() {
-				routineCtx, routineCancel := context.WithTimeout(context.Background(), 30*time.Second)
-				defer routineCancel()
-				flag := true
-				for flag {
-					select {
-					case <-routineCtx.Done():
-						return
-					default:
-						variance, err := h.Service.GenerateTask(ctx, userId)
-						if err != nil {
-							continue
-						}
-						setLabA, err := h.Service.ValidateLab3AResult(ctx, variance)
-						if err != nil {
-							continue
-						}
-						setLabB, err := h.Service.ValidateLab3BResult(ctx, variance)
-						if err != nil {
-							continue
-						}
-						setLabC, err := h.Service.ValidateLab3CResult(ctx, variance)
-						if err != nil {
-							continue
-						}
 
-						var firstMaxA, secondMaxA float64 = 0, 0
-						for _, v := range setLabA {
-							if firstMaxA <= v {
-								secondMaxA = firstMaxA
-								firstMaxA = v
-							} else if secondMaxA <= v {
-								secondMaxA = v
-							}
-						}
-
-						var firstMaxB, secondMaxB float64 = 0, 0
-						for _, v := range setLabB {
-							if firstMaxB <= v {
-								secondMaxB = firstMaxB
-								firstMaxB = v
-							} else if secondMaxB <= v {
-								secondMaxB = v
-							}
-						}
-
-						var firstMaxC, secondMaxC float64 = 0, 0
-						for _, v := range setLabC {
-							if firstMaxC <= v {
-								secondMaxC = firstMaxC
-								firstMaxC = v
-							} else if secondMaxC <= v {
-								secondMaxC = v
-							}
-						}
-
-						if secondMaxA <= 0 || secondMaxB <= 0 || secondMaxC <= 0 {
-							continue
-						}
-
-						if firstMaxA > secondMaxA+0.03 && firstMaxB > secondMaxB+0.03 && firstMaxC > secondMaxC+0.03 {
-							if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1BId, variance); err != nil {
-								return
-							}
-							return
-						}
-					}
-				}
-			}()
+		variance, data := h.Service.GenerateUserVariance1B(ctx)
+		if err := h.Service.UpdateUserVariance1B(ctx, userId, model.Variance1B{
+			Number: variance,
+			Data:   data,
+		}); err != nil {
+			return
 		}
 	} else {
 		if err := h.Service.CloseLabForStudent(ctx, userId, service.Lab1BId); err != nil {

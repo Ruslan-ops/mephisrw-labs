@@ -30,7 +30,7 @@ func (h *Handler) OpenFirstALab(c *gin.Context) {
 		return
 	}
 
-	userDone, _, err := h.Service.GetVariance(ctx, userId, service.Lab1AId)
+	userDone, err := h.Service.GetVariance1A(ctx, userId)
 	if err != nil {
 		err = fmt.Errorf("ошибка получения варианта")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -113,24 +113,13 @@ func (h *Handler) OpenFirstALabForStudent(c *gin.Context) {
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
-		go func() {
-			routineCtx, routineCancel := context.WithTimeout(context.Background(), 30*time.Second)
-			defer routineCancel()
-			for {
-				select {
-				case <-routineCtx.Done():
-					return
-				default:
-					variance, data := h.Service.GenerateUserVariance(ctx)
-					if err := h.Service.UpdateUserVariance(ctx, userId, service.Lab1AId, model.Variance{
-						Number: variance,
-						Data:   data,
-					}); err != nil {
-						return
-					}
-				}
-			}
-		}()
+		variance, data := h.Service.GenerateUserVariance1A(ctx)
+		if err := h.Service.UpdateUserVariance1A(ctx, userId, model.Variance1A{
+			Number: variance,
+			Data:   data,
+		}); err != nil {
+			return
+		}
 	} else {
 		if err := h.Service.CloseLabForStudent(ctx, userId, service.Lab1AId); err != nil {
 			err = fmt.Errorf("ошибка закрытия лабораторной работы")
@@ -169,5 +158,311 @@ func (h *Handler) GetCurrentStepLab1A(c *gin.Context) {
 		"user_id":    userId,
 		"step":       step,
 		"percentage": mark,
+	})
+}
+
+func (h *Handler) Send1AImportanceMatrix(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AImportanceMatrix
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 0 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AImportanceMatrix(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 1); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
+	})
+}
+
+func (h *Handler) Send1AImportanceMatrixFirstCriteria(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AImportanceMatrixFirstCriteria
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 1 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AImportanceMatrixFirstCriteria(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 2); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
+	})
+}
+
+func (h *Handler) Send1AImportanceMatrixSecondCriteria(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AImportanceMatrixSecondCriteria
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 2 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AImportanceMatrixSecondCriteria(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 3); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
+	})
+}
+
+func (h *Handler) Send1AImportanceMatrixThirdCriteria(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AImportanceMatrixSecondCriteria
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 3 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AImportanceMatrixThirdCriteria(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 4); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
+	})
+}
+
+func (h *Handler) Send1AImportanceMatrixFourthCriteria(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AImportanceMatrixFourthCriteria
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 4 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AImportanceMatrixFourthCriteria(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 5); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
+	})
+}
+
+func (h *Handler) Send1AChosenAlternative(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var userRes model.AnswerLab1AChosenAlternative
+	if err := c.BindJSON(&userRes); err != nil {
+		err = fmt.Errorf("ошибка отправки ответа")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab1AId); err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	} else if step != 5 {
+		err = fmt.Errorf("необходимо проходить работу пошагово")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	mark, res, consistencyRatio, err := h.Service.CheckLab1AChosenAlternative(ctx, userId, userRes.Matrix)
+	if err != nil {
+		err = fmt.Errorf("ошибка со стороны сервера")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	go func() {
+		if err := h.Service.IncrementPercentageDone(context.Background(), userId, service.Lab1AId, mark); err != nil {
+			logrus.Errorf("can't change percentage done user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+		if err := h.Service.UpdateLabStep(ctx, userId, service.Lab1AId, 6); err != nil {
+			logrus.Errorf("can't change lab step user_id:%d labId:%d: %v", userId, service.Lab1AId, err)
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"percentage":  mark,
+		"result":      res,
+		"consistency": consistencyRatio,
 	})
 }

@@ -33,8 +33,8 @@ func (s *commonLabService) GetLabResult(ctx context.Context, userId, labId int) 
 	return mark, nil
 }
 
-func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (model.Variance, error) {
-	return s.repo.GetVariance(userId, labId)
+func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (model.Variance1A, error) {
+	return s.repo.GetVariance1A(userId, labId)
 }
 
 func (s *commonLabService) IncrementPercentageDone(ctx context.Context, userId, labId, mark int) error {
@@ -98,11 +98,11 @@ func (s *commonLabService) OpenLabForStudent(ctx context.Context, userId, labId,
 }
 
 func (s *commonLabService) copyVariant(userId, labIdFrom int, labIdTo int) error {
-	variance, err := s.repo.GetVariance(userId, labIdFrom)
+	variance, err := s.repo.GetVariance1A(userId, labIdFrom)
 	if err != nil {
 		return err
 	}
-	if err := s.repo.UpdateVariance(userId, labIdTo, variance); err != nil {
+	if err := s.repo.UpdateVariance1A(userId, labIdTo, variance); err != nil {
 		return err
 	}
 
