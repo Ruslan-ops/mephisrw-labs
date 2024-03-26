@@ -10,8 +10,3 @@ CREATE TABLE users_done (
     CONSTRAINT check_percentage_range CHECK (percentage >= 0 AND percentage <= 100),
     CONSTRAINT constraint_line_unique UNIQUE (user_id, internal_lab_id, external_lab_id)
 );
-
-CREATE TABLE bank_variance (
-    id bigserial not null Primary key,
-    variance json not null
-);

@@ -7,6 +7,12 @@ import (
 	"fmt"
 )
 
+const (
+	Lab1AId = 1
+	Lab1BId = 2
+	Lab2Id  = 3
+)
+
 type commonLabService struct {
 	repo *repository.Repo
 }
@@ -33,8 +39,8 @@ func (s *commonLabService) GetLabResult(ctx context.Context, userId, labId int) 
 	return mark, nil
 }
 
-func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (model.Variance1A, error) {
-	return s.repo.GetVariance1A(userId, labId)
+func (s *commonLabService) GetUserVariance(ctx context.Context, userId, labId int) (interface{}, error) {
+	return s.repo.GetVariance(userId, labId)
 }
 
 func (s *commonLabService) IncrementPercentageDone(ctx context.Context, userId, labId, mark int) error {
@@ -82,11 +88,6 @@ func (s *commonLabService) OpenLabForStudent(ctx context.Context, userId, labId,
 		if err := s.repo.InsertUserInfo(val); err != nil {
 			return false, err
 		}
-		if labId != Lab1AId {
-			if err := s.copyVariant(userId, Lab1AId, labId); err != nil {
-				return false, err
-			}
-		}
 		return false, nil
 	} else {
 		if err := s.repo.UpdateUserInfo(val); err != nil {
@@ -95,18 +96,6 @@ func (s *commonLabService) OpenLabForStudent(ctx context.Context, userId, labId,
 	}
 
 	return user.IsDone, nil
-}
-
-func (s *commonLabService) copyVariant(userId, labIdFrom int, labIdTo int) error {
-	variance, err := s.repo.GetVariance1A(userId, labIdFrom)
-	if err != nil {
-		return err
-	}
-	if err := s.repo.UpdateVariance1A(userId, labIdTo, variance); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (s *commonLabService) ClearToken(userId, labId int) error {
@@ -148,4 +137,8 @@ func (s *commonLabService) IsEmptyToken(userId, labId int) bool {
 	}
 
 	return false
+}
+
+func (s *commonLabService) UpdateUserVariance(userId, labId int, variance interface{}) error {
+	return s.repo.UpdateVariance(userId, labId, variance)
 }

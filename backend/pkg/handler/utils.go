@@ -60,11 +60,6 @@ func (h *Handler) CheckFirstAHeaderStudentForStart(c *gin.Context) {
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab1AId); err != nil {
-		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
 }
 
 func (h *Handler) CheckFirstBHeaderStudentForStart(c *gin.Context) {
@@ -123,11 +118,6 @@ func (h *Handler) CheckFirstBHeaderStudentForStart(c *gin.Context) {
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab1BId); err != nil {
-		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
 }
 
 func (h *Handler) CheckSecondHeaderStudentForStart(c *gin.Context) {
@@ -183,11 +173,6 @@ func (h *Handler) CheckSecondHeaderStudentForStart(c *gin.Context) {
 	}
 	if !user.IsDone {
 		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab2Id); err != nil {
-		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -309,7 +294,7 @@ func (h *Handler) CheckFirstAHeaderStudent(c *gin.Context) {
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab1AId); err != nil {
+	if _, err := h.Service.GetUserVariance(c, userId, service.Lab1AId); err != nil {
 		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -365,7 +350,7 @@ func (h *Handler) CheckFirstBHeaderStudent(c *gin.Context) {
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab1BId); err != nil {
+	if _, err := h.Service.GetUserVariance(c, userId, service.Lab1BId); err != nil {
 		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -421,7 +406,7 @@ func (h *Handler) CheckSecondHeaderStudent(c *gin.Context) {
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, _, err := h.Service.GetVariance1A(c, userId, service.Lab2Id); err != nil {
+	if _, err := h.Service.GetUserVariance(c, userId, service.Lab2Id); err != nil {
 		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
