@@ -93,6 +93,9 @@ func (s *commonLabService) OpenLabForStudent(ctx context.Context, userId, labId,
 		if err := s.repo.UpdateUserInfo(val); err != nil {
 			return user.IsDone, err
 		}
+		if err := s.repo.UpdateVariance(userId, labId, nil); err != nil {
+			return user.IsDone, err
+		}
 	}
 
 	return user.IsDone, nil
