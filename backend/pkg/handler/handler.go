@@ -35,6 +35,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				notsecurityLab1a.POST("/info", h.UpdateUserInfoLab1A)
 				notsecurityLab1a.GET("/info", h.GetCurrentStepLab1A)
+				notsecurityLab1a.POST("/result", h.SendUserResultLab1A)
 			}
 		}
 	}
@@ -57,6 +58,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				notSecurityLab1b.POST("/info", h.UpdateUserInfoLab1B)
 				notSecurityLab1b.GET("/info", h.GetCurrentStepLab1B)
+				notSecurityLab1b.POST("/result", h.SendUserResultLab1B)
 			}
 		}
 	}
@@ -79,6 +81,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				notSecurityLab2.POST("/info", h.UpdateUserInfoLab2)
 				notSecurityLab2.GET("/info", h.GetCurrentStepLab2)
+				notSecurityLab2.POST("/result", h.SendUserResultLab2)
 			}
 		}
 	}
