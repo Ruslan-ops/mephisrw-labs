@@ -45,7 +45,7 @@ func (h *Handler) UpdateUserVarianceLab1B(c *gin.Context) {
 
 	userInfo, err := h.Service.GetUserInfo(userId, service.Lab1BId)
 	if err != nil {
-		err = fmt.Errorf("ошибка получения информации о лаблораторной работе")
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -61,6 +61,10 @@ func (h *Handler) UpdateUserVarianceLab1B(c *gin.Context) {
 		time.Sleep(time.Duration(minutesDuration) * time.Minute)
 
 		if h.Service.IsEmptyToken(userId, service.Lab1BId) {
+			return
+		}
+
+		if userInfo.IsDone {
 			return
 		}
 
@@ -205,6 +209,61 @@ func (h *Handler) OpenLab1BForStudent(c *gin.Context) {
 			return
 		}
 	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (h *Handler) SendUserResultLab1B(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var data model.SendUserResult
+	if err := c.BindJSON(&data); err != nil {
+		err = fmt.Errorf("ошибка получения данных")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	userInfo, err := h.Service.GetUserInfo(userId, service.Lab1BId)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if h.Service.IsEmptyToken(userId, service.Lab1BId) {
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе: пустой токен")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	userMark, err := h.Service.GetLabResult(ctx, userId, service.Lab1BId)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения результатов")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.Service.SendLabMark(ctx, userId, userInfo.ExternalLabId, userMark); err != nil {
+		err = fmt.Errorf("ошибка получения оценки")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		logrus.Errorf("ERROR LAB1A send result user:%d lab:%d", userId, userInfo.ExternalLabId)
+		return
+	}
+
+	if err := h.Service.ClearToken(userId, service.Lab1BId); err != nil {
+		logrus.Errorf("ERROR clear token user:%d lab:%d", userId, service.Lab1BId)
+		err = fmt.Errorf("внутренняя ошибка")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	logrus.Println(fmt.Sprintf("SEND user:%d lab:%d percentage:%d", userId, service.Lab1BId, userMark))
 
 	c.JSON(http.StatusOK, gin.H{})
 }
