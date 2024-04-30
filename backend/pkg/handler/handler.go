@@ -51,6 +51,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			securityLab1b := studentLab1b.Group("", h.CheckFirstBHeaderStudentForStart)
 			{
+				securityLab1b.GET("/ideal", h.GetLab1BVariance)
 				securityLab1b.POST("", h.UpdateUserVarianceLab1B)
 			}
 

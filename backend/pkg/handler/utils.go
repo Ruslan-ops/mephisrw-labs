@@ -109,12 +109,12 @@ func (h *Handler) CheckFirstBHeaderStudentForStart(c *gin.Context) {
 
 	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
 	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -167,12 +167,12 @@ func (h *Handler) CheckSecondHeaderStudentForStart(c *gin.Context) {
 
 	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
 	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -341,12 +341,12 @@ func (h *Handler) CheckFirstBHeaderStudent(c *gin.Context) {
 
 	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
 	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -397,12 +397,12 @@ func (h *Handler) CheckSecondHeaderStudent(c *gin.Context) {
 
 	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
 	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 3а")
+		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}

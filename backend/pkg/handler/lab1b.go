@@ -88,6 +88,25 @@ func (h *Handler) UpdateUserVarianceLab1B(c *gin.Context) {
 	}()
 }
 
+func (h *Handler) GetLab1BVariance(c *gin.Context) {
+	_, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+	logrus.Println(fmt.Sprintf("GET VARIANCE user:%d", userId))
+
+	variance, err := h.Service.GetIdealVariant1B()
+	if err != nil {
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, fmt.Errorf("can't get variant").Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, variance)
+}
+
 func (h *Handler) GetCurrentStepLab1B(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, handlerTimeout)
 	defer cancel()

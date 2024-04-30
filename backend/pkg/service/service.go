@@ -28,14 +28,20 @@ type commonLab interface {
 	GetUserVariance(ctx context.Context, userId, labId int) (interface{}, error)
 }
 
+type lab1BVariance interface {
+	GetIdealVariant1B() (model.Variant1B, error)
+}
+
 type Service struct {
 	external
 	commonLab
+	lab1BVariance
 }
 
 func NewService(repo *repository.Repo) *Service {
 	return &Service{
-		external:  NewExternalService(),
-		commonLab: NewCommonLabService(repo),
+		external:      NewExternalService(),
+		commonLab:     NewCommonLabService(repo),
+		lab1BVariance: NewLab1BService(repo),
 	}
 }
