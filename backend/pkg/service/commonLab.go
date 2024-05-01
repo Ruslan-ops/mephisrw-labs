@@ -145,3 +145,7 @@ func (s *commonLabService) IsEmptyToken(userId, labId int) bool {
 func (s *commonLabService) UpdateUserVariance(userId, labId int, variance interface{}) error {
 	return s.repo.UpdateVariance(userId, labId, variance)
 }
+
+func (s *commonLabService) CheckIsEmptyVariant(userId, labId int) bool {
+	return s.repo.CheckIsEmptyVariant(userId, labId)
+}

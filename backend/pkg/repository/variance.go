@@ -78,3 +78,17 @@ func (r *VarianceRepo) CheckVariance(userId, labId int) error {
 
 	return nil
 }
+
+func (r *VarianceRepo) CheckIsEmptyVariant(userId, labId int) bool {
+	var data []byte
+	query := fmt.Sprintf("SELECT variance FROM %s WHERE user_id = $1 AND internal_lab_id = $2", usersTable)
+	if err := r.db.Get(&data, query, userId, labId); err != nil {
+		return true
+	}
+
+	if string(data) == "null" {
+		return true
+	}
+
+	return false
+}

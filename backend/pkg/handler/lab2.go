@@ -142,6 +142,12 @@ func (h *Handler) UpdateUserInfoLab2(c *gin.Context) {
 		return
 	}
 
+	if h.Service.CheckIsEmptyVariant(userId, service.Lab2Id) {
+		err = fmt.Errorf("ошибка получения варианта лабораторной работы")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if err := h.Service.UpdateLabStep(ctx, userId, service.Lab2Id, data.Step); err != nil {
 		err = fmt.Errorf("ошибка получения шага")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -226,6 +232,12 @@ func (h *Handler) SendUserResultLab2(c *gin.Context) {
 
 	userId, err := getUserId(c)
 	if err != nil {
+		return
+	}
+
+	if h.Service.CheckIsEmptyVariant(userId, service.Lab2Id) {
+		err = fmt.Errorf("ошибка получения варианта лабораторной работы")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 

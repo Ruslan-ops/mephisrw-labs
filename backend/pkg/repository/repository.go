@@ -14,6 +14,7 @@ type userRepo interface {
 type varianceRepo interface {
 	UpdateVariance(userId int, labId int, variance interface{}) error
 	GetVariance(userId, labId int) (interface{}, error)
+	CheckIsEmptyVariant(userId, labId int) bool
 }
 
 type tokenRepo interface {

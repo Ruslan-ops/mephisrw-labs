@@ -26,6 +26,7 @@ type commonLab interface {
 	GetCurrentMark(userId, labId int) (int, error)
 	UpdateUserVariance(userId, labId int, variance interface{}) error
 	GetUserVariance(ctx context.Context, userId, labId int) (interface{}, error)
+	CheckIsEmptyVariant(userId, labId int) bool
 }
 
 type lab1BVariance interface {
