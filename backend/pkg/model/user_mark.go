@@ -17,9 +17,9 @@ type UserRepo struct {
 
 type UserStepPercentage struct {
 	Step       int `json:"step" binding:"required"`
-	Percentage int `json:"percentage" binding:"required"`
+	Percentage int `json:"percentage"`
 }
 
 type SendUserResult struct {
-	Percentage int `json:"percentage" binding:"required"`
+	Percentage int `json:"percentage"`
 }
