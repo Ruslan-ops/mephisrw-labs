@@ -1,6 +1,6 @@
 DROP TABLE users_done;
 
-DROP TABLE bank_variance;
+DROP TABLE bank_variance_1b_lab;
 
 ALTER TABLE users_done
     DROP CONSTRAINT constraint_line_unique;

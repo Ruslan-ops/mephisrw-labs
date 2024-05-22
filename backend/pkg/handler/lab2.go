@@ -14,38 +14,45 @@ import (
 	"time"
 )
 
-func (h *Handler) OpenSecondLab(c *gin.Context) {
+func (h *Handler) UpdateUserVarianceLab2(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, handlerTimeout)
 	defer cancel()
-
-	minutesDuration, err := strconv.Atoi(os.Getenv("THIRD_LAB_DURATION_MINUTES"))
-	if err != nil {
-		err = fmt.Errorf("ошибка получения продолжительности работы")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
 
 	userId, err := getUserId(c)
 	if err != nil {
 		return
 	}
 
-	userInfo, err := h.Service.GetUserInfo(userId, service.Lab2Id)
+	minutesDuration, err := strconv.Atoi(os.Getenv("FIRST_LAB_DURATION_MINUTES"))
 	if err != nil {
-		err = fmt.Errorf("ошибка получения информации о лаблораторной работе")
+		err = fmt.Errorf("ошибка получения продолжительности работы")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var lab2 model.Variance2
+	if err := c.BindJSON(&lab2); err != nil {
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.Service.UpdateUserVariance(userId, service.Lab2Id, lab2); err != nil {
+		err = fmt.Errorf("ошибка сохранения варианта")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	userDone, err := h.Service.GetVariance2(ctx, userId)
+	userInfo, err := h.Service.GetUserInfo(userId, service.Lab2Id)
 	if err != nil {
-		err = fmt.Errorf("ошибка получения варианта")
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"user_id": userId,
-		"variant": userDone,
+		"variant": lab2,
 	})
 
 	go func() {
@@ -57,14 +64,18 @@ func (h *Handler) OpenSecondLab(c *gin.Context) {
 			return
 		}
 
+		if userInfo.IsDone {
+			return
+		}
+
 		userMark, err := h.Service.GetLabResult(ctx, userId, service.Lab2Id)
 		if err != nil {
 			logrus.Errorf("ERROR get result user:%d lab:%d", userId, service.Lab2Id)
 			return
 		}
 
-		if err := h.Service.SendLabMark(c, userId, userInfo.ExternalLabId, userMark); err != nil {
-			logrus.Errorf("ERROR LAB3C send result user:%d lab:%d", userId, userInfo.ExternalLabId)
+		if err := h.Service.SendLabMark(ctx, userId, userInfo.ExternalLabId, userMark); err != nil {
+			logrus.Errorf("ERROR LAB3A send result user:%d lab:%d", userId, userInfo.ExternalLabId)
 			return
 		}
 
@@ -72,11 +83,97 @@ func (h *Handler) OpenSecondLab(c *gin.Context) {
 			logrus.Errorf("ERROR clear token user:%d lab:%d", userId, service.Lab2Id)
 			return
 		}
+
 		logrus.Println(fmt.Sprintf("SEND user:%d lab:%d percentage:%d", userId, service.Lab2Id, userMark))
 	}()
 }
 
-func (h *Handler) OpenSecondLabForStudent(c *gin.Context) {
+func (h *Handler) GetCurrentStepLab2(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab2Id)
+	if err != nil {
+		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	mark, err := h.Service.GetCurrentMark(userId, service.Lab2Id)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения текущей оценки")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	userDone, err := h.Service.GetUserVariance(ctx, userId, service.Lab2Id)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения варианта")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"user_id":    userId,
+		"step":       step,
+		"variance":   userDone,
+		"percentage": mark,
+	})
+}
+
+func (h *Handler) UpdateUserInfoLab2(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, handlerTimeout)
+	defer cancel()
+
+	var data model.UserStepPercentage
+	if err := c.BindJSON(&data); err != nil {
+		err = fmt.Errorf("ошибка получения данных")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	if h.Service.CheckIsEmptyVariant(userId, service.Lab2Id) {
+		err = fmt.Errorf("ошибка получения варианта лабораторной работы")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.Service.UpdateLabStep(ctx, userId, service.Lab2Id, data.Step); err != nil {
+		err = fmt.Errorf("ошибка получения шага")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.Service.IncrementPercentageDone(ctx, userId, service.Lab2Id, data.Percentage); err != nil {
+		err = fmt.Errorf("ошибка получения шага")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	userDone, err := h.Service.GetUserVariance(ctx, userId, service.Lab2Id)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения варианта")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"user_id":  userId,
+		"variance": userDone,
+	})
+}
+
+func (h *Handler) OpenLab2ForStudent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, handlerTimeout)
 	defer cancel()
 
@@ -111,17 +208,9 @@ func (h *Handler) OpenSecondLabForStudent(c *gin.Context) {
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
-
-		variance, data := h.Service.GenerateUserVariance2(ctx)
-		if err := h.Service.UpdateUserVariance2(ctx, userId, model.Variance2{
-			Number: variance,
-			Data:   data,
-		}); err != nil {
-			return
-		}
 	} else {
 		if err := h.Service.CloseLabForStudent(ctx, userId, service.Lab2Id); err != nil {
-			err = fmt.Errorf("ошибка открытия лабораторной работы")
+			err = fmt.Errorf("ошибка закрытия лабораторной работы")
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -130,32 +219,63 @@ func (h *Handler) OpenSecondLabForStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func (h *Handler) GetCurrentStepLab2(c *gin.Context) {
+func (h *Handler) SendUserResultLab2(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, handlerTimeout)
 	defer cancel()
+
+	var data model.SendUserResult
+	if err := c.BindJSON(&data); err != nil {
+		err = fmt.Errorf("ошибка получения данных")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	userId, err := getUserId(c)
 	if err != nil {
 		return
 	}
 
-	step, err := h.Service.GetLabCurrentStep(ctx, userId, service.Lab2Id)
+	if h.Service.CheckIsEmptyVariant(userId, service.Lab2Id) {
+		err = fmt.Errorf("ошибка получения варианта лабораторной работы")
+		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userInfo, err := h.Service.GetUserInfo(userId, service.Lab2Id)
 	if err != nil {
-		err = fmt.Errorf("необходимо открыть лабораторную работу")
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	mark, err := h.Service.GetCurrentMark(userId, service.Lab2Id)
-	if err != nil {
-		err = fmt.Errorf("ошибка получения текущей оценки")
+	if h.Service.IsEmptyToken(userId, service.Lab2Id) {
+		err = fmt.Errorf("ошибка получения информации о лабораторной работе: пустой токен")
 		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"user_id":    userId,
-		"step":       step,
-		"percentage": mark,
-	})
+	userMark, err := h.Service.GetLabResult(ctx, userId, service.Lab2Id)
+	if err != nil {
+		err = fmt.Errorf("ошибка получения результатов")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.Service.SendLabMark(ctx, userId, userInfo.ExternalLabId, userMark); err != nil {
+		err = fmt.Errorf("ошибка получения оценки")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		logrus.Errorf("ERROR LAB1A send result user:%d lab:%d", userId, userInfo.ExternalLabId)
+		return
+	}
+
+	if err := h.Service.ClearToken(userId, service.Lab2Id); err != nil {
+		logrus.Errorf("ERROR clear token user:%d lab:%d", userId, service.Lab2Id)
+		err = fmt.Errorf("внутренняя ошибка")
+		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	logrus.Println(fmt.Sprintf("SEND user:%d lab:%d percentage:%d", userId, service.Lab2Id, userMark))
+
+	c.JSON(http.StatusOK, gin.H{})
 }

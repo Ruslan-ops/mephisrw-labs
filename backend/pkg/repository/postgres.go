@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	usersTable   = "users_done"
-	bankVariance = "bank_variance"
+	usersTable     = "users_done"
+	bankVariance1B = "bank_variance_1b_lab"
 )
 
 func NewPostgresDB(cfg model.Config) (*sqlx.DB, error) {

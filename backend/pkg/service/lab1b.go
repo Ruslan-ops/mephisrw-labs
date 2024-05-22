@@ -1,17 +1,20 @@
 package service
 
 import (
+	"backend/pkg/model"
 	"backend/pkg/repository"
 )
 
-const Lab1BId = 2
-
-type lab1bService struct {
+type lab1BService struct {
 	repo *repository.Repo
 }
 
-func NewLab1bService(repo *repository.Repo) *lab1bService {
-	return &lab1bService{
+func NewLab1BService(repo *repository.Repo) *lab1BService {
+	return &lab1BService{
 		repo: repo,
 	}
+}
+
+func (s *lab1BService) GetIdealVariant1B() (model.Variant1B, error) {
+	return s.repo.GetIdealVariant1B()
 }

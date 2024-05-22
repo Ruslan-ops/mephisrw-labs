@@ -12,12 +12,9 @@ type userRepo interface {
 }
 
 type varianceRepo interface {
-	UpdateVariance1A(userId int, labId int, variance model.Variance1A) error
-	UpdateVariance1B(userId int, labId int, variance model.Variance1B) error
-	UpdateVariance2(userId int, labId int, variance model.Variance2) error
-	GetVariance1A(userId, labId int) (model.Variance1A, error)
-	GetVariance1B(userId, labId int) (model.Variance1B, error)
-	GetVariance2(userId, labId int) (model.Variance2, error)
+	UpdateVariance(userId int, labId int, variance interface{}) error
+	GetVariance(userId, labId int) (interface{}, error)
+	CheckIsEmptyVariant(userId, labId int) bool
 }
 
 type tokenRepo interface {
@@ -33,18 +30,24 @@ type markRepo interface {
 	GetCurrentMark(userId, labId int) (int, error)
 }
 
+type lab1BVariance interface {
+	GetIdealVariant1B() (model.Variant1B, error)
+}
+
 type Repo struct {
 	userRepo
 	varianceRepo
 	tokenRepo
 	markRepo
+	lab1BVariance
 }
 
 func NewRepo(db *sqlx.DB) *Repo {
 	return &Repo{
-		userRepo:     NewUserRepo(db),
-		tokenRepo:    NewTokenRepo(db),
-		varianceRepo: NewVarianceRepo(db),
-		markRepo:     NewMarkRepo(db),
+		userRepo:      NewUserRepo(db),
+		tokenRepo:     NewTokenRepo(db),
+		varianceRepo:  NewVarianceRepo(db),
+		markRepo:      NewMarkRepo(db),
+		lab1BVariance: NewSecondLabRepo(db),
 	}
 }
