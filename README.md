@@ -5,3 +5,6 @@ MephiSRW is a system for MEPHI University, which is planned to use in a learnig 
 #
 The code are used for to be managed by frontend (beacuse all logic for labs implement there).
 #
+#
+Other labs (written by me): https://gitlab.com/yaakovlew/mephisrw-labs
+#
