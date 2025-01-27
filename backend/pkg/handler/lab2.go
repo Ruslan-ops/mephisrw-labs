@@ -6,12 +6,13 @@ import (
 	"backend/pkg/service"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *Handler) UpdateUserVarianceLab2(c *gin.Context) {
@@ -177,39 +178,27 @@ func (h *Handler) OpenLab2ForStudent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, handlerTimeout)
 	defer cancel()
 
-	user := c.Query("user_id")
-	isOpen := c.Query("is_open")
-	externalLab := c.Query("lab_id")
+	// Define a struct to parse the JSON body
+	var body struct {
+		UserId int  `json:"user_id"`
+		IsOpen bool `json:"is_open"`
+		LabId  int  `json:"lab_id"`
+	}
 
-	userId, err := strconv.Atoi(user)
-	if err != nil {
-		err = fmt.Errorf("ошибка получения студента")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// Parse the JSON body
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	externalLabId, err := strconv.Atoi(externalLab)
-	if err != nil {
-		err = fmt.Errorf("ошибка получения лабораторной работы")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	isOpenBool, err := strconv.ParseBool(isOpen)
-	if err != nil {
-		err = fmt.Errorf("ошибка получения изменения проведения лабораторной работы")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if isOpenBool {
-		if _, err := h.Service.OpenLabForStudent(ctx, userId, service.Lab2Id, externalLabId); err != nil {
+	if body.IsOpen {
+		if _, err := h.Service.OpenLabForStudent(ctx, body.UserId, service.Lab2Id, body.LabId); err != nil {
 			err = fmt.Errorf("ошибка открытия лабораторной работы")
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 	} else {
-		if err := h.Service.CloseLabForStudent(ctx, userId, service.Lab2Id); err != nil {
+		if err := h.Service.CloseLabForStudent(ctx, body.UserId, service.Lab2Id); err != nil {
 			err = fmt.Errorf("ошибка закрытия лабораторной работы")
 			errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return

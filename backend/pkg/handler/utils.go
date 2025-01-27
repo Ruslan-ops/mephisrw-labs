@@ -5,9 +5,10 @@ import (
 	"backend/pkg/service"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (

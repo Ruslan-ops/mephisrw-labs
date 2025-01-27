@@ -1,2 +1,4 @@
 backend/cmd/labs/.env
 backend/.env
+__debug_*
+.vscode/settings.json

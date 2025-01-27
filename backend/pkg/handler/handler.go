@@ -2,6 +2,9 @@ package handler
 
 import (
 	"backend/pkg/service"
+	"time"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +19,15 @@ func NewHandler(service *service.Service) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"https://mephi22.undersite.ru", "https://mephi71.ru", "http://127.0.0.1:9000", "http://localhost:9000", "http://127.0.0.1:9001", "http://localhost:9001"},
+		AllowMethods:     []string{"PUT", "GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "lab-token"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	lab1a := router.Group("/lab1a")
 	{
@@ -68,7 +80,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		lecturerLab2 := lab2.Group("/open", h.CheckSecondHeaderLecturer)
 		{
-			lecturerLab2.POST("", h.OpenLab2ForStudent)
+			lecturerLab2.PATCH("", h.OpenLab2ForStudent)
 		}
 
 		studentLab2 := lab2.Group("/variant")
