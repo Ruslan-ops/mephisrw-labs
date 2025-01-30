@@ -166,17 +166,17 @@ func (h *Handler) CheckSecondHeaderStudentForStart(c *gin.Context) {
 		return
 	}
 
-	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
-	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
+	// user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
+	// if err != nil {
+	// 	err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
+	// 	errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+	// if !user.IsDone {
+	// 	err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
+	// 	errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
 }
 
 func (h *Handler) CheckFirstAHeaderLecturer(c *gin.Context) {
@@ -396,17 +396,17 @@ func (h *Handler) CheckSecondHeaderStudent(c *gin.Context) {
 		return
 	}
 
-	user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
-	if err != nil {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	if !user.IsDone {
-		err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
-		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
+	// user, err = h.Service.GetUserInfo(userId, service.Lab1AId)
+	// if err != nil {
+	// 	err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
+	// 	errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+	// if !user.IsDone {
+	// 	err = fmt.Errorf("необходимо пройти лабораторную работу 1а")
+	// 	errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
 	if _, err := h.Service.GetUserVariance(c, userId, service.Lab2Id); err != nil {
 		err = fmt.Errorf("ошибка формирования варианта, обратитесь к администратору")
 		errorResponse.NewErrorResponse(c, http.StatusBadRequest, err.Error())
