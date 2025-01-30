@@ -237,11 +237,11 @@ func (h *Handler) SendUserResultLab2(c *gin.Context) {
 		return
 	}
 
-	if h.Service.IsEmptyToken(userId, service.Lab2Id) {
-		err = fmt.Errorf("ошибка получения информации о лабораторной работе: пустой токен")
-		errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// if h.Service.IsEmptyToken(userId, service.Lab2Id) {
+	// 	err = fmt.Errorf("ошибка получения информации о лабораторной работе: пустой токен")
+	// 	errorResponse.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	userMark, err := h.Service.GetLabResult(ctx, userId, service.Lab2Id)
 	if err != nil {
