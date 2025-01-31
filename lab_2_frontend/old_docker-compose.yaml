@@ -1,0 +1,67 @@
+version: '3.8'
+
+networks:
+  new:
+
+services:
+  frontend:
+    networks:
+      - new
+    build:
+      context: ./frontend
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+
+  backend:
+    networks:
+      - new
+    build: ./backend
+    restart: always
+    command: ./backend
+    ports:
+      - 8000:8000
+    volumes:
+      - ./materials:/materials
+    environment:
+      - DB_PASSWORD=postgres
+    depends_on:
+      - migrate
+
+  db:
+    image: postgres:latest
+    restart: always
+    networks:
+      new:
+        aliases:
+          - database
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=mephisrw
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate
+    networks:
+      - new
+    volumes:
+      - ./backend/schema:/migrations
+    command: [ "-path", "/migrations", "-database",  "postgres://postgres:postgres@database:5432/mephisrw?sslmode=disable", "up", "3" ]
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data: { }

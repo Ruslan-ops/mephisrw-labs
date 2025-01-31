@@ -2,3 +2,11 @@ lab_2_backend/backend/cmd/labs/.env
 lab_2_backend/backend/.env
 lab_2_backend/__debug_*
 lab_2_backend/.vscode/settings.json
+
+lab_2_frontend/.idea
+lab_2_frontend/.DS_Store
+lab_2_frontend/.vscode
+lab_2_frontend/.database
+lab_2_frontend/backend/src
+lab_2_frontend/backend/.env
+lab_2_frontend/node_modules
