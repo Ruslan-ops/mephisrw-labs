@@ -1,0 +1,66 @@
+networks:
+  lab2_net:
+
+
+services:
+  labs_db:
+    image: postgres:latest
+    restart: always
+    networks:
+      - lab2_net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=labs
+    ports:
+      - 5434:5432
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  migrate_labs:
+    image: migrate/migrate
+    networks:
+      - lab2_net
+    volumes:
+      - ./lab_2_backend/backend/migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://postgres:postgres@labs_db:5432/labs?sslmode=disable", "up" ]
+    depends_on:
+      labs_db:
+        condition: service_healthy
+
+  lab_2_backend:
+    networks:
+      - lab2_net
+    restart: always
+    build:
+      context: ./lab_2_backend/backend
+    environment:
+      - DB_HOST=labs_db
+      - DB_PORT=5432
+      - APP_PORT=8003
+      - EXTERNAL_APP_HOST=http://host.docker.internal:8000
+    ports:
+      - '8003:8003'
+    depends_on:
+      - migrate_labs
+
+  lab_2_frontend:
+    networks:
+      - lab2_net
+    build:
+      context: ./lab_2_frontend/frontend
+      args:
+        BASE_URL: 'http://host.docker.internal:8000'
+        LAB12_URL: 'http:/localhost:8003'
+    ports:
+      - '9003:80'
+    depends_on:
+      - lab_2_backend
+
+volumes:
+  db-data: {}
