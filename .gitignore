@@ -10,3 +10,5 @@ lab_2_frontend/.database
 lab_2_frontend/backend/src
 lab_2_frontend/backend/.env
 lab_2_frontend/node_modules
+
+.database
