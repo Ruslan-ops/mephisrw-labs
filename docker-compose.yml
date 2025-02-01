@@ -56,7 +56,7 @@ services:
       context: ./lab_2_frontend/frontend
       args:
         BASE_URL: 'http://host.docker.internal:8000'
-        LAB12_URL: 'http:/localhost:8003'
+        LAB12_URL: 'http://localhost:8003'
     ports:
       - '9003:80'
     depends_on:
